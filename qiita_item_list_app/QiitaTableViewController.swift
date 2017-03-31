@@ -169,18 +169,9 @@ class QiitaTableViewController: UITableViewController {
             case let Result.success(response):
                 
                 let latestItems = response.items
-                    .filter {
-                        return ISO8601DateFormatter().date(from: $0.createdAt)! > ISO8601DateFormatter().date(from: self.items.first!.createdAt)!
-                    }.map {
-                        return $0
-                }
+                    .filter { return ISO8601DateFormatter().date(from: $0.createdAt)! > ISO8601DateFormatter().date(from: self.items.first!.createdAt)! }
                 
-                if latestItems.count > 0 {
-                    self.items.insert(contentsOf: latestItems, at: 0)
-                } else{
-                    print("更新分はありません")
-                }
-                
+                self.items.insert(contentsOf: latestItems, at: 0)
                 self.tableView.reloadData()
                 
                 // 次の読み込みようにpageNum更新
