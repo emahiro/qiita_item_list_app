@@ -14,46 +14,17 @@ class QiitaTableViewController: UITableViewController {
     // MARK: Properties
     var items = [Item]()
     let client = QiitaHTTPClient()
-    let ITEM_NUM = 10
     var pageNum = 1
-    
-    private func loadItems(_ itemNum: Int, _ pageNum: Int) {
-        
-        let request = QiitaApi.getItems(per_page: itemNum, page: pageNum)
-        SVProgressHUD.show()
-        
-        self.client.send(request: request) { result in
-            switch result {
-            case let Result.success(response):
-                self.items += response.items
-                self.tableView.reloadData()
-                
-                // 次の読み込みようにpageNum更新
-                self.pageNum += 1
-                
-                SVProgressHUD.dismiss()
-            case let Result.failure(error):
-                print(error)
-            }
-        }
-    }
-    
-    private func loadImage(imageUrl:URL) -> UIImage? {
-        // loadImage
-        do {
-            let imageData = try NSData(contentsOf: imageUrl, options: .dataReadingMapped)
-            return UIImage(data: imageData as Data)
-        } catch let e {
-            print("ImageLoadError: \(e)")
-        }
-        
-        return nil
-    }
-    
+    var loaded = false
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // itemの読み込み
-        loadItems(self.ITEM_NUM, self.pageNum)
+        loadItems()
+        
+        self.refreshControl = UIRefreshControl()
+        refreshControl?.addTarget(self, action: #selector(QiitaTableViewController.loadItems), for: .valueChanged)
+        self.tableView.addSubview(self.refreshControl!)
     }
     
     override func didReceiveMemoryWarning() {
@@ -154,6 +125,50 @@ class QiitaTableViewController: UITableViewController {
     // MARK: - ScrollView
     
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if(self.tableView.contentOffset.y >= (self.tableView.contentSize.height - self.tableView.bounds.size.height)){
+            if (!self.loaded && self.items.count > 0) {
+                self.loaded = true
+                loadItems()
+            }
+        }
+    }
+    
+    // MARK: Loading Items
+    
+    func loadItems() {
         
+        let request = QiitaApi.getItems(per_page: 10, page: self.pageNum)
+        SVProgressHUD.show()
+        
+        self.client.send(request: request) { result in
+            switch result {
+            case let Result.success(response):
+                self.items += response.items
+                self.tableView.reloadData()
+                
+                // 次の読み込みようにpageNum更新
+                self.pageNum += 1
+                SVProgressHUD.dismiss()
+                self.refreshControl?.endRefreshing()
+                
+                // loadable変更
+                self.loaded = false
+                
+            case let Result.failure(error):
+                print(error)
+            }
+        }
+    }
+    
+    private func loadImage(imageUrl:URL) -> UIImage? {
+        // loadImage
+        do {
+            let imageData = try NSData(contentsOf: imageUrl, options: .dataReadingMapped)
+            return UIImage(data: imageData as Data)
+        } catch let e {
+            print("ImageLoadError: \(e)")
+        }
+        
+        return nil
     }
 }
