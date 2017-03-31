@@ -170,12 +170,8 @@ class QiitaTableViewController: UITableViewController {
                 
                 
                 let latestItems = response.items.filter {
-                    print($0.updatedAt)
                     return ISO8601DateFormatter().date(from: $0.updatedAt)! > ISO8601DateFormatter().date(from: self.items.first!.updatedAt)!
                 }
-                
-                print(self.items.first!.updatedAt)
-                print(latestItems)
                 
                 self.items.insert(contentsOf: latestItems, at: 0)
                 self.tableView.reloadData()
