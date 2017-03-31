@@ -14,6 +14,7 @@ struct Item: JSONDecodable {
     let renderedBody: String
     let body: String
     let createdAt: String
+    let updatedAt: String
     let id: String
     let tags: [Tag]
     let title: String
@@ -36,6 +37,10 @@ struct Item: JSONDecodable {
         
         guard let createdAt = dict["created_at"] as? String else {
             throw JSONDecodeError.missingValue(id: "created_at", actualValue: dict["created_at"])
+        }
+        
+        guard let updatedAt = dict["updated_at"] as? String else {
+            throw JSONDecodeError.missingValue(id: "updated_at", actualValue: dict["updated_at"])
         }
         
         guard let id = dict["id"] as? String else {
@@ -61,6 +66,7 @@ struct Item: JSONDecodable {
         self.renderedBody = renderedBody
         self.body = body
         self.createdAt = createdAt
+        self.updatedAt = updatedAt
         self.id = id
         self.tags = try tagObj.map {
             return try Tag.init(json: $0)

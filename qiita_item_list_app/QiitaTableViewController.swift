@@ -161,21 +161,25 @@ class QiitaTableViewController: UITableViewController {
     
     func loadLatesItems(){
         
-        let request = QiitaApi.getItems(per_page: 10, page: self.pageNum)
+        let request = QiitaApi.getItems(per_page: 10, page: 1)
         SVProgressHUD.show()
         
         self.client.send(request: request) { result in
             switch result {
             case let Result.success(response):
                 
-                let latestItems = response.items
-                    .filter { return ISO8601DateFormatter().date(from: $0.createdAt)! > ISO8601DateFormatter().date(from: self.items.first!.createdAt)! }
+                
+                let latestItems = response.items.filter {
+                    print($0.updatedAt)
+                    return ISO8601DateFormatter().date(from: $0.updatedAt)! > ISO8601DateFormatter().date(from: self.items.first!.updatedAt)!
+                }
+                
+                print(self.items.first!.updatedAt)
+                print(latestItems)
                 
                 self.items.insert(contentsOf: latestItems, at: 0)
                 self.tableView.reloadData()
                 
-                // 次の読み込みようにpageNum更新
-                self.pageNum += 1
                 SVProgressHUD.dismiss()
                 self.refreshControl?.endRefreshing()
                 
@@ -183,7 +187,6 @@ class QiitaTableViewController: UITableViewController {
                 print(error)
             }
         }
-        
     }
     
     private func loadImage(imageUrl:URL) -> UIImage? {
