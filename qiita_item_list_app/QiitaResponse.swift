@@ -24,3 +24,16 @@ struct QiitaResponse<T: JSONDecodable>: JSONDecodable {
         }
     }
 }
+
+struct QiitaDetailResponse<T: JSONDecodable>: JSONDecodable {
+    let item: T
+    
+    init(json: Any) throws {
+        
+        guard let itemObj = JSON(json).dictionaryObject else {
+            throw JSONDecodeError.invalidFormat(json: json)
+        }
+        
+        self.item = try T(json: itemObj)
+    }
+}

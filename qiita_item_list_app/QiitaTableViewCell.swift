@@ -9,7 +9,6 @@
 import UIKit
 
 class QiitaTableViewCell: UITableViewCell {
-
     
     @IBOutlet weak var itemTitle: UILabel!
     @IBOutlet weak var userName: UILabel!
@@ -20,7 +19,7 @@ class QiitaTableViewCell: UITableViewCell {
         super.awakeFromNib()
         itemId.isHidden = true
     }
-
+    
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
     }

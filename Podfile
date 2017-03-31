@@ -8,6 +8,7 @@ target 'qiita_item_list_app' do
   # Pods for qiita_item_list_app
   pod 'Alamofire'
   pod 'SwiftyJSON'
+  pod 'SVProgressHUD'
 
   target 'qiita_item_list_appTests' do
     inherit! :search_paths

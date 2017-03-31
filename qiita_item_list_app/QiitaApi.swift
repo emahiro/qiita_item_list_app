@@ -31,7 +31,7 @@ final class QiitaApi {
     
     struct getItem: QiitaRequest {
         let id: String
-        typealias Response = QiitaResponse<Item>
+        typealias Response = QiitaDetailResponse<Item>
         
         var resource: String {
             return "/items/\(id)"
