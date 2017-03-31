@@ -23,7 +23,7 @@ class QiitaTableViewController: UITableViewController {
         loadItems()
         
         self.refreshControl = UIRefreshControl()
-        refreshControl?.addTarget(self, action: #selector(QiitaTableViewController.loadItems), for: .valueChanged)
+        refreshControl?.addTarget(self, action: #selector(QiitaTableViewController.loadLatesItems), for: .valueChanged)
         self.tableView.addSubview(self.refreshControl!)
     }
     
@@ -149,7 +149,6 @@ class QiitaTableViewController: UITableViewController {
                 // 次の読み込みようにpageNum更新
                 self.pageNum += 1
                 SVProgressHUD.dismiss()
-                self.refreshControl?.endRefreshing()
                 
                 // loadable変更
                 self.loaded = false
@@ -158,6 +157,42 @@ class QiitaTableViewController: UITableViewController {
                 print(error)
             }
         }
+    }
+    
+    func loadLatesItems(){
+        
+        let request = QiitaApi.getItems(per_page: 10, page: self.pageNum)
+        SVProgressHUD.show()
+        
+        self.client.send(request: request) { result in
+            switch result {
+            case let Result.success(response):
+                
+                let latestItems = response.items
+                    .filter {
+                        return ISO8601DateFormatter().date(from: $0.createdAt)! > ISO8601DateFormatter().date(from: self.items.first!.createdAt)!
+                    }.map {
+                        return $0
+                }
+                
+                if latestItems.count > 0 {
+                    self.items.insert(contentsOf: latestItems, at: 0)
+                } else{
+                    print("更新分はありません")
+                }
+                
+                self.tableView.reloadData()
+                
+                // 次の読み込みようにpageNum更新
+                self.pageNum += 1
+                SVProgressHUD.dismiss()
+                self.refreshControl?.endRefreshing()
+                
+            case let Result.failure(error):
+                print(error)
+            }
+        }
+        
     }
     
     private func loadImage(imageUrl:URL) -> UIImage? {
@@ -171,4 +206,13 @@ class QiitaTableViewController: UITableViewController {
         
         return nil
     }
+    
+    // dateFormatter
+    private static let ISO8601Formatter: DateFormatter = {
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZ"
+        return dateFormatter
+    }()
 }
